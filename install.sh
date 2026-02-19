@@ -32,7 +32,7 @@ echo ""
 # 1. Copy marketplace
 echo "📦 Copying marketplace..."
 mkdir -p "$PLUGINS_DIR"
-cp -r "$SCRIPT_DIR/.claude-plugin" "$PLUGINS_DIR/"
+/bin/cp -r "$SCRIPT_DIR/.claude-plugin" "$PLUGINS_DIR/"
 
 # 2. Copy selected plugins
 for plugin in "${SELECTED_PLUGINS[@]}"; do
@@ -46,40 +46,40 @@ for plugin in "${SELECTED_PLUGINS[@]}"; do
   PLUGIN_DST="$PLUGINS_DIR/plugins/$plugin"
 
   mkdir -p "$PLUGIN_DST"
-  cp -r "$PLUGIN_SRC/." "$PLUGIN_DST/"
+  /bin/cp -r "$PLUGIN_SRC/." "$PLUGIN_DST/"
 
   # Copy agents to ~/.claude/agents/
   if [ -d "$PLUGIN_SRC/agents" ]; then
     mkdir -p "$CLAUDE_DIR/agents"
-    cp "$PLUGIN_SRC/agents/"*.md "$CLAUDE_DIR/agents/" 2>/dev/null || true
+    /bin/cp "$PLUGIN_SRC/agents/"*.md "$CLAUDE_DIR/agents/" 2>/dev/null || true
     echo "  ✓ Agents"
   fi
 
   # Copy skills to ~/.claude/skills/
   if [ -d "$PLUGIN_SRC/skills" ]; then
     mkdir -p "$CLAUDE_DIR/skills"
-    cp -r "$PLUGIN_SRC/skills/"* "$CLAUDE_DIR/skills/" 2>/dev/null || true
+    /bin/cp -r "$PLUGIN_SRC/skills/"* "$CLAUDE_DIR/skills/" 2>/dev/null || true
     echo "  ✓ Skills"
   fi
 
   # Copy rules to ~/.claude/rules/
   if [ -d "$PLUGIN_SRC/rules" ]; then
     mkdir -p "$CLAUDE_DIR/rules"
-    cp "$PLUGIN_SRC/rules/"*.md "$CLAUDE_DIR/rules/" 2>/dev/null || true
+    /bin/cp "$PLUGIN_SRC/rules/"*.md "$CLAUDE_DIR/rules/" 2>/dev/null || true
     echo "  ✓ Rules"
   fi
 
   # Copy hooks to ~/.claude/hooks/
   if [ -d "$PLUGIN_SRC/hooks" ]; then
     mkdir -p "$CLAUDE_DIR/hooks"
-    cp "$PLUGIN_SRC/hooks/"*.sh "$CLAUDE_DIR/hooks/" 2>/dev/null || true
+    /bin/cp "$PLUGIN_SRC/hooks/"*.sh "$CLAUDE_DIR/hooks/" 2>/dev/null || true
     chmod +x "$CLAUDE_DIR/hooks/"*.sh 2>/dev/null || true
     echo "  ✓ Hooks"
   fi
 
   # Copy scripts to ~/.claude/
   if [ -d "$PLUGIN_SRC/scripts" ]; then
-    cp "$PLUGIN_SRC/scripts/"* "$CLAUDE_DIR/" 2>/dev/null || true
+    /bin/cp "$PLUGIN_SRC/scripts/"* "$CLAUDE_DIR/" 2>/dev/null || true
     chmod +x "$CLAUDE_DIR/"*.sh 2>/dev/null || true
     echo "  ✓ Scripts"
   fi
@@ -168,9 +168,9 @@ register_hook "SessionStart" "bash ~/.claude/hooks/session-start.sh" "session-st
 
 # 6. Configure statusline
 echo ""
-echo "📊 Configuring statusline..."
+echo "📊 Configuring statusLine..."
 if [ -f "$CLAUDE_DIR/statusline-command.sh" ]; then
-  SETTINGS_TMP=$(jq '.statusline = {"enabled": true, "script": "bash ~/.claude/statusline-command.sh"}' "$SETTINGS_FILE")
+  SETTINGS_TMP=$(jq '.statusLine = {"type": "command", "command": "bash ~/.claude/statusline-command.sh"}' "$SETTINGS_FILE")
   echo "$SETTINGS_TMP" > "$SETTINGS_FILE"
   echo "  ✓ Statusline enabled"
 fi

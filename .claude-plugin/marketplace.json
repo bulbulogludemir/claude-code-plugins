@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "claude-code-plugins",
   "description": "Modular Claude Code plugin system — 7 domain plugins covering frontend, backend, mobile, DevOps, quality, devtools, and core infrastructure",
-  "homepage": "https://github.com/demir/claude-code-plugins",
+  "homepage": "https://github.com/bulbulogludemir/claude-code-plugins",
   "owner": {
     "name": "demir",
     "email": "demir@influos.app"
@@ -58,7 +58,7 @@
     },
     {
       "name": "claude-devtools",
-      "description": "Git & Review domain — review-plan/refactor skills, pre-commit/codex-review hooks, statusline script.",
+      "description": "Git & Review domain — review-plan/refactor skills, pre-commit/codex-review hooks.",
       "version": "1.0.0",
       "author": { "name": "demir", "email": "demir@influos.app" },
       "source": "./plugins/claude-devtools",

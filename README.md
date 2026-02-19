@@ -12,17 +12,34 @@ Modular plugin system for Claude Code — 7 domain plugins covering the complete
 | `claude-mobile` | Mobile | Mobile agent, Expo/React Native/NativeWind skill |
 | `claude-devops` | Infrastructure | DevOps agent, release skill, pre-deploy/post-deploy hooks |
 | `claude-quality` | QA | Reviewer agent, quality/bugfix/error-recovery skills |
-| `claude-devtools` | Git & Review | Review-plan/refactor skills, pre-commit/codex-review hooks, statusline script |
+| `claude-devtools` | Git & Review | Review-plan/refactor skills, pre-commit/codex-review hooks |
 
-## Install
+## Quick Start
 
-### Quick Install (all plugins)
+### Prerequisites
+
+- [Claude Code](https://claude.ai/claude-code) installed
+- `jq` installed (`brew install jq` on macOS, `apt install jq` on Linux)
+
+### Install
 
 ```bash
+git clone https://github.com/bulbulogludemir/claude-code-plugins.git
+cd claude-code-plugins
 bash install.sh
 ```
 
+Restart Claude Code to activate.
+
+### Uninstall
+
+```bash
+bash uninstall.sh
+```
+
 ### Selective Install
+
+Install only specific plugins:
 
 ```bash
 bash install.sh claude-core claude-frontend claude-backend
@@ -32,7 +49,7 @@ bash install.sh claude-core claude-frontend claude-backend
 
 1. Copy marketplace to Claude Code plugins:
 ```bash
-cp -r . ~/.claude/plugins/marketplaces/claude-code-plugins/
+/bin/cp -r . ~/.claude/plugins/marketplaces/claude-code-plugins/
 ```
 
 2. Enable in `~/.claude/settings.json`:
