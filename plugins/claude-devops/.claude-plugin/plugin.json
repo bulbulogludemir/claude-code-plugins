@@ -1,0 +1,6 @@
+{
+  "name": "claude-devops",
+  "description": "Infrastructure domain — devops agent, release skill, deploy hooks.",
+  "version": "1.0.0",
+  "author": { "name": "demir" }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "claude-quality",
+  "description": "QA domain — reviewer agent, quality/bugfix/error-recovery skills.",
+  "version": "1.0.0",
+  "author": { "name": "demir" }
+}

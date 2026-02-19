@@ -1,0 +1,6 @@
+{
+  "name": "claude-devtools",
+  "description": "Git & Review domain — review-plan/refactor skills, pre-commit/codex-review hooks, statusline.",
+  "version": "1.0.0",
+  "author": { "name": "demir" }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "claude-frontend",
+  "description": "UI domain — frontend/i18n agents, component/styling/UI/accessibility/performance/SEO skills.",
+  "version": "1.0.0",
+  "author": { "name": "demir" }
+}

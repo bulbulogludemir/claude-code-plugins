@@ -1,0 +1,6 @@
+{
+  "name": "claude-core",
+  "description": "Foundation plugin — hooks, rules, core skills, explorer agent. Required by all other plugins.",
+  "version": "1.0.0",
+  "author": { "name": "demir" }
+}

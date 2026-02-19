@@ -1,0 +1,67 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-code-plugins",
+  "description": "Modular Claude Code plugin system — 7 domain plugins covering frontend, backend, mobile, DevOps, quality, devtools, and core infrastructure",
+  "owner": {
+    "name": "demir",
+    "email": "demir@influos.app"
+  },
+  "plugins": [
+    {
+      "name": "claude-core",
+      "description": "Foundation plugin — hooks, rules, core skills (implement, planning, onboarding), explorer agent. Required by all other plugins.",
+      "version": "1.0.0",
+      "author": { "name": "demir" },
+      "source": "./plugins/claude-core",
+      "category": "development"
+    },
+    {
+      "name": "claude-frontend",
+      "description": "UI domain — frontend/i18n agents, component/styling/UI/accessibility/performance/SEO skills, i18n hardcoded string check hook.",
+      "version": "1.0.0",
+      "author": { "name": "demir" },
+      "source": "./plugins/claude-frontend",
+      "category": "development"
+    },
+    {
+      "name": "claude-backend",
+      "description": "API & Data domain — backend/database/security/analytics agents, API/DB/integration/jobs/analytics/monitoring/email/AI skills, Stripe/S3 hooks.",
+      "version": "1.0.0",
+      "author": { "name": "demir" },
+      "source": "./plugins/claude-backend",
+      "category": "development"
+    },
+    {
+      "name": "claude-mobile",
+      "description": "Mobile domain — mobile agent, Expo/React Native/NativeWind skills, Expo npm install warning hook.",
+      "version": "1.0.0",
+      "author": { "name": "demir" },
+      "source": "./plugins/claude-mobile",
+      "category": "development"
+    },
+    {
+      "name": "claude-devops",
+      "description": "Infrastructure domain — devops agent, release skill, pre-deploy/post-deploy hooks.",
+      "version": "1.0.0",
+      "author": { "name": "demir" },
+      "source": "./plugins/claude-devops",
+      "category": "deployment"
+    },
+    {
+      "name": "claude-quality",
+      "description": "QA domain — reviewer agent, quality/bugfix/error-recovery skills.",
+      "version": "1.0.0",
+      "author": { "name": "demir" },
+      "source": "./plugins/claude-quality",
+      "category": "productivity"
+    },
+    {
+      "name": "claude-devtools",
+      "description": "Git & Review domain — review-plan/refactor skills, pre-commit/codex-review hooks, statusline script.",
+      "version": "1.0.0",
+      "author": { "name": "demir" },
+      "source": "./plugins/claude-devtools",
+      "category": "productivity"
+    }
+  ]
+}
