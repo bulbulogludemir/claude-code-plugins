@@ -13,8 +13,9 @@ if [ ! -f "$CHANGES_LOG" ]; then
   exit 0  # No changes, nothing to check
 fi
 
-HAS_TS_CHANGES=$(grep -cE '\.(ts|tsx)$' "$CHANGES_LOG" 2>/dev/null || echo "0")
-if [ "$HAS_TS_CHANGES" -eq 0 ]; then
+HAS_TS_CHANGES=$(grep -cE '\.(ts|tsx)$' "$CHANGES_LOG" 2>/dev/null || true)
+HAS_TS_CHANGES="${HAS_TS_CHANGES:-0}"
+if [ "$HAS_TS_CHANGES" -eq 0 ] 2>/dev/null; then
   exit 0  # Only non-TS files changed
 fi
 
