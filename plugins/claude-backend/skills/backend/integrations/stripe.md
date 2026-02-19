@@ -233,3 +233,47 @@ export async function getProducts() {
   }))
 }
 ```
+
+## Vercel Deployment Gotcha
+
+**CRITICAL:** Stripe SDK uses Node.js `http` module by default, which doesn't work in Vercel's Edge/Serverless environment. You MUST use `createFetchHttpClient`.
+
+### Fix: Use createFetchHttpClient
+
+```typescript
+// lib/stripe.ts (Vercel-compatible)
+import Stripe from 'stripe'
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-04-10',
+  typescript: true,
+  httpClient: Stripe.createFetchHttpClient(), // REQUIRED for Vercel
+})
+```
+
+### next.config.ts
+
+```typescript
+// next.config.ts
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ['stripe'], // Prevents bundling issues
+}
+
+export default nextConfig
+```
+
+### Why This Matters
+
+Without `createFetchHttpClient()`:
+- Stripe calls fail silently or throw `ECONNREFUSED` on Vercel
+- Works locally but breaks in production
+- The default `http` module is not available in Vercel's serverless environment
+
+| Environment | httpClient | Works? |
+|-------------|-----------|--------|
+| Local dev | Default (http) | Yes |
+| Vercel Serverless | Default (http) | No |
+| Vercel Serverless | createFetchHttpClient | Yes |
+| Docker/Coolify | Default (http) | Yes |

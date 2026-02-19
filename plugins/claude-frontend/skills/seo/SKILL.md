@@ -9,6 +9,8 @@ triggers:
   - og image
   - structured data
   - json-ld
+  - meta veri
+  - site haritası
 ---
 
 # SEO Skill

@@ -3,10 +3,14 @@ name: onboarding
 description: New project setup, scaffolding, boilerplate
 triggers:
   - new project
+  - new project setup
+  - scaffold project
   - setup
   - init
   - scaffold
   - bootstrap
+  - yeni proje
+  - kurulum
 ---
 
 # Onboarding Skill

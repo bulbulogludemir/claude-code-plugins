@@ -2,6 +2,7 @@
 name: backend
 description: "API, database, server logic, webhooks. Auto-use for any API/DB work."
 version: 3.0.0
+triggers: [API, route, endpoint, Supabase, webhook, server action, sunucu, veritabanı, şema]
 allowed-tools:
   - Read
   - Edit
@@ -13,7 +14,7 @@ allowed-tools:
 
 # Backend
 
-**Auto-use when:** API, route, endpoint, database, Supabase, schema, migration, webhook, server action
+**Auto-use when:** API, route, endpoint, Supabase, webhook, server action
 
 **Works with:** `frontend` for UI
 

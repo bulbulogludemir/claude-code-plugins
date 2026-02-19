@@ -2,6 +2,7 @@
 name: mobile
 description: "React Native, Expo, mobile apps. Auto-use for mobile work."
 version: 2.0.0
+triggers: [Expo, React Native, mobile, app, NativeWind, iOS, Android, mobil, uygulama, telefon]
 allowed-tools:
   - Read
   - Edit

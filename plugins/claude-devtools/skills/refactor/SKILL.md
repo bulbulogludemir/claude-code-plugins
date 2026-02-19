@@ -7,6 +7,8 @@ triggers:
   - reorganize
   - clean up
   - extract
+  - yeniden yapılandır
+  - temizle
 ---
 
 # Refactoring Skill

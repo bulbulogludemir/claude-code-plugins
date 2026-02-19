@@ -9,6 +9,8 @@ triggers:
   - llm
   - streaming ai
   - tool use
+  - yapay zeka
+  - AI entegrasyon
 ---
 
 # AI Integration Skill
@@ -946,3 +948,259 @@ npm install openai @upstash/redis
 | No streaming for chat UI | Use ReadableStream + SSE |
 | Sending full conversation without trim | Use trimConversation() |
 | fal.ai polling in a loop | Use fal.subscribe or webhooks |
+
+---
+
+## 10. OpenAI GPT-4o Integration
+
+```typescript
+// lib/ai/openai.ts
+import OpenAI from 'openai'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+})
+
+export async function chatCompletion({
+  systemPrompt,
+  userMessage,
+  model = 'gpt-4o',
+  maxTokens = 4096,
+}: {
+  systemPrompt: string
+  userMessage: string
+  model?: string
+  maxTokens?: number
+}) {
+  const response = await openai.chat.completions.create({
+    model,
+    max_tokens: maxTokens,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userMessage },
+    ],
+  })
+
+  return {
+    text: response.choices[0].message.content ?? '',
+    usage: {
+      promptTokens: response.usage?.prompt_tokens ?? 0,
+      completionTokens: response.usage?.completion_tokens ?? 0,
+    },
+    finishReason: response.choices[0].finish_reason,
+  }
+}
+```
+
+### Function Calling
+
+```typescript
+export async function functionCall<T>({
+  systemPrompt,
+  userMessage,
+  functionName,
+  functionDescription,
+  parameters,
+}: {
+  systemPrompt: string
+  userMessage: string
+  functionName: string
+  functionDescription: string
+  parameters: Record<string, unknown>
+}) {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userMessage },
+    ],
+    tools: [
+      {
+        type: 'function',
+        function: {
+          name: functionName,
+          description: functionDescription,
+          parameters,
+        },
+      },
+    ],
+    tool_choice: { type: 'function', function: { name: functionName } },
+  })
+
+  const toolCall = response.choices[0].message.tool_calls?.[0]
+  if (!toolCall) throw new Error('No function call response')
+
+  return JSON.parse(toolCall.function.arguments) as T
+}
+```
+
+---
+
+## 11. Embeddings + pgvector RAG Pipeline
+
+### Drizzle Schema with pgvector
+
+```typescript
+// lib/db/schema.ts
+import { pgTable, text, vector, bigint, timestamp } from 'drizzle-orm/pg-core'
+
+export const documents = pgTable('documents', {
+  id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+  content: text('content').notNull(),
+  embedding: vector('embedding', { dimensions: 1536 }),
+  metadata: text('metadata'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+})
+```
+
+### Enable pgvector Extension
+
+```sql
+-- Migration: enable pgvector
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+### Generate Embeddings
+
+```typescript
+// lib/ai/embeddings.ts
+import OpenAI from 'openai'
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text,
+  })
+  return response.data[0].embedding
+}
+
+export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
+  // Batch in chunks of 100
+  const results: number[][] = []
+  for (let i = 0; i < texts.length; i += 100) {
+    const batch = texts.slice(i, i + 100)
+    const response = await openai.embeddings.create({
+      model: 'text-embedding-3-small',
+      input: batch,
+    })
+    results.push(...response.data.map((d) => d.embedding))
+  }
+  return results
+}
+```
+
+### Similarity Search
+
+```typescript
+// lib/ai/search.ts
+import { db } from '@/lib/db'
+import { documents } from '@/lib/db/schema'
+import { cosineDistance, desc, gt, sql } from 'drizzle-orm'
+import { generateEmbedding } from './embeddings'
+
+export async function similaritySearch({
+  query,
+  limit = 5,
+  minSimilarity = 0.7,
+}: {
+  query: string
+  limit?: number
+  minSimilarity?: number
+}) {
+  const queryEmbedding = await generateEmbedding(query)
+
+  const similarity = sql<number>`1 - (${cosineDistance(documents.embedding, queryEmbedding)})`
+
+  const results = await db
+    .select({
+      id: documents.id,
+      content: documents.content,
+      metadata: documents.metadata,
+      similarity,
+    })
+    .from(documents)
+    .where(gt(similarity, minSimilarity))
+    .orderBy(desc(similarity))
+    .limit(limit)
+
+  return results
+}
+```
+
+### Full RAG Pipeline
+
+```typescript
+// lib/ai/rag.ts
+import { similaritySearch } from './search'
+import { chatCompletion } from './openai'
+
+export async function ragQuery({
+  question,
+  systemPrompt = 'You are a helpful assistant. Answer based on the provided context.',
+  maxContextDocs = 5,
+}: {
+  question: string
+  systemPrompt?: string
+  maxContextDocs?: number
+}) {
+  // 1. Search for relevant documents
+  const relevantDocs = await similaritySearch({
+    query: question,
+    limit: maxContextDocs,
+  })
+
+  // 2. Build augmented prompt
+  const context = relevantDocs
+    .map((doc, i) => `[${i + 1}] ${doc.content}`)
+    .join('\n\n')
+
+  const augmentedMessage = `Context:\n${context}\n\nQuestion: ${question}`
+
+  // 3. Generate response
+  const response = await chatCompletion({
+    systemPrompt,
+    userMessage: augmentedMessage,
+  })
+
+  return {
+    answer: response.text,
+    sources: relevantDocs,
+    usage: response.usage,
+  }
+}
+```
+
+### Ingest Documents
+
+```typescript
+// lib/ai/ingest.ts
+import { db } from '@/lib/db'
+import { documents } from '@/lib/db/schema'
+import { generateEmbeddings } from './embeddings'
+
+export async function ingestDocuments(
+  docs: Array<{ content: string; metadata?: string }>
+) {
+  const contents = docs.map((d) => d.content)
+  const embeddings = await generateEmbeddings(contents)
+
+  const rows = docs.map((doc, i) => ({
+    content: doc.content,
+    embedding: embeddings[i],
+    metadata: doc.metadata ?? null,
+  }))
+
+  await db.insert(documents).values(rows)
+
+  return { ingested: rows.length }
+}
+```
+
+### Dependencies
+
+```bash
+npm install openai
+# pgvector extension must be enabled in PostgreSQL
+```

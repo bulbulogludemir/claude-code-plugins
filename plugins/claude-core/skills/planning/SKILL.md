@@ -2,6 +2,7 @@
 name: planning
 description: "Plan, PRD, requirements. Auto-use for new features/projects."
 version: 4.0.0
+triggers: [plan, PRD, requirements, new feature, feature design, gereksinim, yeni özellik]
 allowed-tools:
   - Read
   - Write
@@ -25,7 +26,7 @@ allowed-tools:
 
 # Planning
 
-**Auto-use when:** plan, PRD, requirements, "let's build", new project, feature
+**Auto-use when:** plan, PRD, requirements, "let's build", new feature, feature design
 
 **Works with:** Routes to `frontend`, `backend`, `mobile`, `quality` for execution
 
@@ -175,7 +176,7 @@ mcp__claude-in-chrome__read_console_messages({ tabId, onlyErrors: true })
 | "Plan/build X" | Full workflow |
 | "Add feature" | Medium interview → tasks → execute |
 | "Fix bug" | Use `quality` skill directly |
-| "New project" | Large interview → full spec |
+| "New project" | Use `onboarding` skill |
 
 ---
 

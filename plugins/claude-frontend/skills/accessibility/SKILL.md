@@ -7,6 +7,8 @@ triggers:
   - aria
   - screen reader
   - wcag
+  - erişilebilirlik
+  - ekran okuyucu
 ---
 
 # Accessibility Skill

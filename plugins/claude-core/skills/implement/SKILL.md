@@ -2,6 +2,7 @@
 name: implement
 description: "Execute an implementation plan immediately with parallel agents and quality gates. Use when given a plan to implement."
 version: 1.0.0
+triggers: [implement, execute plan, uygula, planı çalıştır]
 allowed-tools:
   - Read
   - Write

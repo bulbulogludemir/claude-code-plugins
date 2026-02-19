@@ -1,7 +1,7 @@
 ---
 name: analytics
 description: SQL/Drizzle queries, metrics, GA4, cohort analysis
-triggers: [analytics, metrics, DAU, MAU, funnel, cohort, revenue, conversion]
+triggers: [analytics, metrics, DAU, MAU, funnel, cohort, revenue, conversion, metrik, analitik, kullanıcı sayısı]
 allowed-tools:
   - Read
   - Bash

@@ -1,6 +1,7 @@
 ---
 name: release
 description: "Full release pipeline — implement, verify, and push to main. Also handles deployments."
+triggers: [push, commit, ship, deploy, release, production, yayınla, canlıya al]
 allowed-tools:
   - Read
   - Edit

@@ -2,6 +2,11 @@
 name: review-plan
 description: "Get a second opinion from Codex on your plan. Multi-turn discussion until consensus."
 version: 1.0.0
+triggers:
+  - review plan
+  - second opinion
+  - plan incele
+  - ikinci görüş
 allowed-tools:
   - Read
   - Bash

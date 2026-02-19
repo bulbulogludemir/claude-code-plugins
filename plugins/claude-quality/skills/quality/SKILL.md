@@ -2,6 +2,7 @@
 name: quality
 description: "Debug, test, verify. Auto-use for bugs, errors, testing."
 version: 3.0.0
+triggers: [bug, error, fix, debug, not working, broken, test, failing, hata, düzelt, çalışmıyor, bozuk]
 allowed-tools:
   - Read
   - Edit

@@ -8,6 +8,8 @@ triggers:
   - speed
   - lighthouse
   - bundle
+  - yavaş
+  - hızlandır
 ---
 
 # Performance Skill

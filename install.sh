@@ -5,6 +5,13 @@
 
 set -euo pipefail
 
+# Check dependencies
+if ! command -v jq &>/dev/null; then
+  echo "❌ jq is required but not installed."
+  echo "   Install: brew install jq (macOS) or apt install jq (Linux)"
+  exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 PLUGINS_DIR="$CLAUDE_DIR/plugins/marketplaces/claude-code-plugins"
@@ -111,14 +118,61 @@ fi
 
 # 4. Update enabledPlugins in settings.json
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
-if [ -f "$SETTINGS_FILE" ]; then
-  echo "📝 Updating settings.json enabledPlugins..."
-  for plugin in "${SELECTED_PLUGINS[@]}"; do
-    if [ -d "$SCRIPT_DIR/plugins/$plugin" ]; then
-      SETTINGS_TMP=$(jq ".enabledPlugins[\"${plugin}@claude-code-plugins\"] = true" "$SETTINGS_FILE")
-      echo "$SETTINGS_TMP" > "$SETTINGS_FILE"
-    fi
-  done
+
+# Ensure settings.json exists
+if [ ! -f "$SETTINGS_FILE" ]; then
+  echo "📝 Creating settings.json..."
+  echo '{}' | jq '.' > "$SETTINGS_FILE"
+fi
+
+echo "📝 Updating settings.json enabledPlugins..."
+for plugin in "${SELECTED_PLUGINS[@]}"; do
+  if [ -d "$SCRIPT_DIR/plugins/$plugin" ]; then
+    SETTINGS_TMP=$(jq ".enabledPlugins[\"${plugin}@claude-code-plugins\"] = true" "$SETTINGS_FILE")
+    echo "$SETTINGS_TMP" > "$SETTINGS_FILE"
+  fi
+done
+
+# 5. Register hooks in settings.json
+echo ""
+echo "🔗 Registering hooks..."
+
+register_hook() {
+  local event="$1"
+  local command="$2"
+  local hook_file="$3"
+
+  if [ ! -f "$CLAUDE_DIR/hooks/$hook_file" ]; then
+    return
+  fi
+
+  # Check if this hook is already registered
+  if jq -e ".hooks.${event}[]?.hooks[]? | select(.command == \"${command}\")" "$SETTINGS_FILE" &>/dev/null; then
+    echo "  ⏭ Hook already registered: $hook_file → $event"
+    return
+  fi
+
+  # Add hook entry
+  local hook_json="{\"matcher\": \"\", \"hooks\": [{\"type\": \"command\", \"command\": \"${command}\"}]}"
+
+  # Ensure hooks object and event array exist
+  SETTINGS_TMP=$(jq ".hooks //= {} | .hooks.${event} //= [] | .hooks.${event} += [${hook_json}]" "$SETTINGS_FILE")
+  echo "$SETTINGS_TMP" > "$SETTINGS_FILE"
+  echo "  ✓ Registered: $hook_file → $event"
+}
+
+register_hook "PreToolUse" "bash ~/.claude/hooks/pre-tool-use.sh \$TOOL_NAME" "pre-tool-use.sh"
+register_hook "PostToolUse" "bash ~/.claude/hooks/quality-gate.sh \$TOOL_NAME" "quality-gate.sh"
+register_hook "UserPromptSubmit" "bash ~/.claude/hooks/user-prompt-submit.sh" "user-prompt-submit.sh"
+register_hook "SessionStart" "bash ~/.claude/hooks/session-start.sh" "session-start.sh"
+
+# 6. Configure statusline
+echo ""
+echo "📊 Configuring statusline..."
+if [ -f "$CLAUDE_DIR/statusline-command.sh" ]; then
+  SETTINGS_TMP=$(jq '.statusline = {"enabled": true, "script": "bash ~/.claude/statusline-command.sh"}' "$SETTINGS_FILE")
+  echo "$SETTINGS_TMP" > "$SETTINGS_FILE"
+  echo "  ✓ Statusline enabled"
 fi
 
 echo ""

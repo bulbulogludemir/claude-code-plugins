@@ -8,6 +8,9 @@ triggers:
   - error tracking
   - sentry
   - uptime
+  - izleme
+  - alarm
+  - hata takibi
 ---
 
 # Monitoring Skill

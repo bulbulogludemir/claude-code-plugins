@@ -7,6 +7,9 @@ triggers:
   - resend
   - transactional
   - welcome email
+  - e-posta
+  - bildirim
+  - mail
 ---
 
 # Email Skill

@@ -2,6 +2,7 @@
 name: frontend
 description: "UI, React, Next.js, components, forms, styling. Auto-use for any UI work."
 version: 3.0.0
+triggers: [component, page, UI, form, button, modal, styling, React, Next.js, Tailwind, bileşen, sayfa, form, buton, modal, stil, arayüz]
 allowed-tools:
   - Read
   - Edit
