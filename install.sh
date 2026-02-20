@@ -1,7 +1,11 @@
 #!/bin/bash
-# Claude Code Plugins — Install Script
+# Claude Code Plugins — Install Script (Symlink-based)
 # Usage: bash install.sh [plugin1 plugin2 ...]
 # If no plugins specified, installs all 7.
+#
+# All assets are symlinked, not copied. After install:
+#   git pull   → changes propagate instantly to ~/.claude/
+#   No need to re-run install.sh after updates.
 
 set -euo pipefail
 
@@ -25,62 +29,67 @@ else
   SELECTED_PLUGINS=("$@")
 fi
 
-echo "=== Claude Code Plugins Installer ==="
+echo "=== Claude Code Plugins Installer (Symlink) ==="
 echo "Installing: ${SELECTED_PLUGINS[*]}"
+echo "Source: $SCRIPT_DIR"
 echo ""
 
-# 1. Copy marketplace
-echo "📦 Copying marketplace..."
-mkdir -p "$PLUGINS_DIR"
-/bin/cp -r "$SCRIPT_DIR/.claude-plugin" "$PLUGINS_DIR/"
+# 1. Symlink marketplace
+echo "🔗 Linking marketplace..."
+mkdir -p "$CLAUDE_DIR/plugins/marketplaces"
+ln -sfn "$SCRIPT_DIR" "$PLUGINS_DIR"
 
-# 2. Copy selected plugins
+# 2. Symlink selected plugin assets
 for plugin in "${SELECTED_PLUGINS[@]}"; do
   if [ ! -d "$SCRIPT_DIR/plugins/$plugin" ]; then
     echo "⚠️  Plugin not found: $plugin (skipping)"
     continue
   fi
 
-  echo "📦 Installing $plugin..."
+  echo "🔗 Linking $plugin..."
   PLUGIN_SRC="$SCRIPT_DIR/plugins/$plugin"
-  PLUGIN_DST="$PLUGINS_DIR/plugins/$plugin"
 
-  mkdir -p "$PLUGIN_DST"
-  /bin/cp -r "$PLUGIN_SRC/." "$PLUGIN_DST/"
-
-  # Copy agents to ~/.claude/agents/
+  # Symlink agents to ~/.claude/agents/
   if [ -d "$PLUGIN_SRC/agents" ]; then
     mkdir -p "$CLAUDE_DIR/agents"
-    /bin/cp "$PLUGIN_SRC/agents/"*.md "$CLAUDE_DIR/agents/" 2>/dev/null || true
+    for f in "$PLUGIN_SRC/agents/"*.md; do
+      [ -f "$f" ] && ln -sf "$f" "$CLAUDE_DIR/agents/$(basename "$f")"
+    done
     echo "  ✓ Agents"
   fi
 
-  # Copy skills to ~/.claude/skills/
+  # Symlink skills to ~/.claude/skills/
   if [ -d "$PLUGIN_SRC/skills" ]; then
     mkdir -p "$CLAUDE_DIR/skills"
-    /bin/cp -r "$PLUGIN_SRC/skills/"* "$CLAUDE_DIR/skills/" 2>/dev/null || true
+    for d in "$PLUGIN_SRC/skills/"*/; do
+      [ -d "$d" ] && ln -sfn "$d" "$CLAUDE_DIR/skills/$(basename "$d")"
+    done
     echo "  ✓ Skills"
   fi
 
-  # Copy rules to ~/.claude/rules/
+  # Symlink rules to ~/.claude/rules/
   if [ -d "$PLUGIN_SRC/rules" ]; then
     mkdir -p "$CLAUDE_DIR/rules"
-    /bin/cp "$PLUGIN_SRC/rules/"*.md "$CLAUDE_DIR/rules/" 2>/dev/null || true
+    for f in "$PLUGIN_SRC/rules/"*.md; do
+      [ -f "$f" ] && ln -sf "$f" "$CLAUDE_DIR/rules/$(basename "$f")"
+    done
     echo "  ✓ Rules"
   fi
 
-  # Copy hooks to ~/.claude/hooks/
+  # Symlink hooks to ~/.claude/hooks/
   if [ -d "$PLUGIN_SRC/hooks" ]; then
     mkdir -p "$CLAUDE_DIR/hooks"
-    /bin/cp "$PLUGIN_SRC/hooks/"*.sh "$CLAUDE_DIR/hooks/" 2>/dev/null || true
-    chmod +x "$CLAUDE_DIR/hooks/"*.sh 2>/dev/null || true
+    for f in "$PLUGIN_SRC/hooks/"*.sh; do
+      [ -f "$f" ] && ln -sf "$f" "$CLAUDE_DIR/hooks/$(basename "$f")"
+    done
     echo "  ✓ Hooks"
   fi
 
-  # Copy scripts to ~/.claude/
+  # Symlink scripts to ~/.claude/
   if [ -d "$PLUGIN_SRC/scripts" ]; then
-    /bin/cp "$PLUGIN_SRC/scripts/"* "$CLAUDE_DIR/" 2>/dev/null || true
-    chmod +x "$CLAUDE_DIR/"*.sh 2>/dev/null || true
+    for f in "$PLUGIN_SRC/scripts/"*; do
+      [ -f "$f" ] && ln -sf "$f" "$CLAUDE_DIR/$(basename "$f")"
+    done
     echo "  ✓ Scripts"
   fi
 done
