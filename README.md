@@ -1,8 +1,27 @@
 # Claude Code Plugins
 
-Modular plugin system for Claude Code — 7 domain plugins covering the complete software engineering workflow.
+Modular plugin system for Claude Code — 7 domain plugins, 10 agents, 17 skills, 11 hooks, 7 rules covering the complete software engineering workflow.
 
-## Plugins
+## Quick Start (Interactive)
+
+**En kolay yol:** [SETUP_PROMPT.md](SETUP_PROMPT.md) dosyasındaki prompt'u Claude Code'a yapıştır. Sana hangi parçaları istediğini sorar ve otomatik kurar.
+
+## Quick Start (Manual)
+
+```bash
+# Prerequisites: jq (brew install jq)
+git clone https://github.com/bulbulogludemir/claude-code-plugins.git
+cd claude-code-plugins
+bash install.sh          # Install all
+# or
+bash install.sh claude-core claude-frontend  # Selective install
+```
+
+Restart Claude Code to activate.
+
+## What's Included
+
+### Custom Plugins
 
 | Plugin | Domain | Contents |
 |--------|--------|----------|
@@ -14,53 +33,37 @@ Modular plugin system for Claude Code — 7 domain plugins covering the complete
 | `claude-quality` | QA | Reviewer agent, quality/bugfix/error-recovery skills |
 | `claude-devtools` | Git & Review | Review-plan/refactor skills, pre-commit/codex-review hooks |
 
-## Quick Start
+### Global Config
 
-### Prerequisites
+| File | Purpose |
+|------|---------|
+| `CLAUDE.md` | Execution mode, quality gates, tech stack definitions, safety rules |
+| `settings.template.json` | Full hook config (rm -rf protection, force push guard, quality gate, statusline) |
 
-- [Claude Code](https://claude.ai/claude-code) installed
-- `jq` installed (`brew install jq` on macOS, `apt install jq` on Linux)
+### External Plugins (auto-installed)
 
-### Install
+| Plugin | Purpose |
+|--------|---------|
+| `typescript-lsp` | TypeScript language server |
+| `stripe` | Stripe integration |
+| `supabase` | Supabase integration |
+| `sentry` | Sentry error tracking |
+| `vercel` | Vercel deployment |
+| `indexandria` | Documentation indexing |
+
+## How It Works
+
+Install uses **symlinks**, not copies. After initial install:
 
 ```bash
-git clone https://github.com/bulbulogludemir/claude-code-plugins.git
-cd claude-code-plugins
-bash install.sh
+cd ~/Projects/claude-code-plugins
+git pull   # Changes propagate instantly — no re-install needed
 ```
 
-Restart Claude Code to activate.
-
-### Uninstall
+## Uninstall
 
 ```bash
 bash uninstall.sh
-```
-
-### Selective Install
-
-Install only specific plugins:
-
-```bash
-bash install.sh claude-core claude-frontend claude-backend
-```
-
-### Manual Install
-
-1. Copy marketplace to Claude Code plugins:
-```bash
-/bin/cp -r . ~/.claude/plugins/marketplaces/claude-code-plugins/
-```
-
-2. Enable in `~/.claude/settings.json`:
-```json
-{
-  "enabledPlugins": {
-    "claude-core@claude-code-plugins": true,
-    "claude-frontend@claude-code-plugins": true,
-    "claude-backend@claude-code-plugins": true
-  }
-}
 ```
 
 ## Tech Stack
@@ -68,17 +71,6 @@ bash install.sh claude-core claude-frontend claude-backend
 - **Web:** Next.js 16, React 19, TypeScript strict, Tailwind 4, shadcn/ui, Drizzle ORM
 - **Mobile:** Expo SDK 54+, NativeWind v4, Supabase
 - **Infrastructure:** Coolify, Vercel, Hetzner, Docker
-
-## Recommended MCP Plugins
-
-Install these from the official marketplace for full functionality:
-
-```bash
-claude plugin install stripe@claude-plugins-official
-claude plugin install supabase@claude-plugins-official
-claude plugin install sentry@claude-plugins-official
-claude plugin install vercel@claude-plugins-official
-```
 
 ## License
 
