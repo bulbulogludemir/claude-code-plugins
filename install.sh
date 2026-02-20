@@ -164,20 +164,45 @@ else
 fi
 echo "  ✓ Hooks, plugins, statusLine configured"
 
+# 6. Install external plugins via claude CLI
+echo ""
+echo "📦 Installing external plugins..."
+
+EXTERNAL_PLUGINS=(
+  "typescript-lsp@claude-plugins-official"
+  "stripe@claude-plugins-official"
+  "supabase@claude-plugins-official"
+  "sentry@claude-plugins-official"
+  "vercel@claude-plugins-official"
+  "indexandria@indexandria"
+)
+
+if command -v claude &>/dev/null; then
+  for ext_plugin in "${EXTERNAL_PLUGINS[@]}"; do
+    # Check if already installed
+    if [ -f "$INSTALLED_FILE" ] && jq -e ".plugins[\"$ext_plugin\"]" "$INSTALLED_FILE" &>/dev/null; then
+      echo "  ⏭ Already installed: $ext_plugin"
+    else
+      echo "  📦 Installing $ext_plugin..."
+      claude plugin install "$ext_plugin" 2>/dev/null && echo "  ✓ $ext_plugin" || echo "  ⚠️  Failed: $ext_plugin (install manually: claude plugin install $ext_plugin)"
+    fi
+  done
+else
+  echo "  ⚠️  'claude' CLI not found. Install external plugins manually after installing Claude Code:"
+  for ext_plugin in "${EXTERNAL_PLUGINS[@]}"; do
+    echo "    claude plugin install $ext_plugin"
+  done
+fi
+
 echo ""
 echo "✅ Installation complete!"
 echo ""
 echo "Installed:"
-echo "  - 7 plugins (10 agents, 17 skills, 11 hooks, 7 rules)"
+echo "  - 7 custom plugins (10 agents, 17 skills, 11 hooks, 7 rules)"
+echo "  - 6 external plugins (typescript-lsp, stripe, supabase, sentry, vercel, indexandria)"
 echo "  - CLAUDE.md (global instructions)"
 echo "  - settings.json (hooks, statusLine, plugins)"
 echo ""
 echo "Updates: Just run 'git pull' — symlinks propagate changes instantly."
-echo ""
-echo "Optional official plugins:"
-echo "  claude plugin install stripe@claude-plugins-official"
-echo "  claude plugin install supabase@claude-plugins-official"
-echo "  claude plugin install sentry@claude-plugins-official"
-echo "  claude plugin install vercel@claude-plugins-official"
 echo ""
 echo "Restart Claude Code to activate."
