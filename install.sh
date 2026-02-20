@@ -94,7 +94,20 @@ for plugin in "${SELECTED_PLUGINS[@]}"; do
   fi
 done
 
-# 3. Update installed_plugins.json
+# 3. Symlink CLAUDE.md
+echo ""
+echo "🔗 Linking CLAUDE.md..."
+if [ -f "$SCRIPT_DIR/CLAUDE.md" ]; then
+  # Back up existing CLAUDE.md if it's not already a symlink
+  if [ -f "$CLAUDE_DIR/CLAUDE.md" ] && [ ! -L "$CLAUDE_DIR/CLAUDE.md" ]; then
+    echo "  Backing up existing CLAUDE.md → CLAUDE.md.bak"
+    mv "$CLAUDE_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md.bak"
+  fi
+  ln -sf "$SCRIPT_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
+  echo "  ✓ CLAUDE.md"
+fi
+
+# 4. Update installed_plugins.json
 INSTALLED_FILE="$CLAUDE_DIR/plugins/installed_plugins.json"
 echo ""
 echo "📝 Updating installed_plugins.json..."
@@ -118,79 +131,53 @@ PLUGINS_JSON+="}}"
 # Merge with existing installed_plugins.json if it exists
 if [ -f "$INSTALLED_FILE" ]; then
   echo "  Merging with existing plugins..."
-  # Keep existing plugins, add new ones
   EXISTING=$(cat "$INSTALLED_FILE")
   echo "$EXISTING" | jq --argjson new "$(echo "$PLUGINS_JSON")" '.plugins += $new.plugins' > "${INSTALLED_FILE}.tmp" && mv "${INSTALLED_FILE}.tmp" "$INSTALLED_FILE"
 else
   echo "$PLUGINS_JSON" | jq '.' > "$INSTALLED_FILE"
 fi
 
-# 4. Update enabledPlugins in settings.json
+# 5. Apply settings.json from template
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
+TEMPLATE_FILE="$SCRIPT_DIR/settings.template.json"
 
-# Ensure settings.json exists
+echo ""
+echo "📝 Configuring settings.json..."
+
 if [ ! -f "$SETTINGS_FILE" ]; then
-  echo "📝 Creating settings.json..."
-  echo '{}' | jq '.' > "$SETTINGS_FILE"
-fi
-
-echo "📝 Updating settings.json enabledPlugins..."
-for plugin in "${SELECTED_PLUGINS[@]}"; do
-  if [ -d "$SCRIPT_DIR/plugins/$plugin" ]; then
-    SETTINGS_TMP=$(jq ".enabledPlugins[\"${plugin}@claude-code-plugins\"] = true" "$SETTINGS_FILE")
-    echo "$SETTINGS_TMP" > "$SETTINGS_FILE"
-  fi
-done
-
-# 5. Register hooks in settings.json
-echo ""
-echo "🔗 Registering hooks..."
-
-register_hook() {
-  local event="$1"
-  local command="$2"
-  local hook_file="$3"
-
-  if [ ! -f "$CLAUDE_DIR/hooks/$hook_file" ]; then
-    return
-  fi
-
-  # Check if this hook is already registered
-  if jq -e ".hooks.${event}[]?.hooks[]? | select(.command == \"${command}\")" "$SETTINGS_FILE" &>/dev/null; then
-    echo "  ⏭ Hook already registered: $hook_file → $event"
-    return
-  fi
-
-  # Add hook entry
-  local hook_json="{\"matcher\": \"\", \"hooks\": [{\"type\": \"command\", \"command\": \"${command}\"}]}"
-
-  # Ensure hooks object and event array exist
-  SETTINGS_TMP=$(jq ".hooks //= {} | .hooks.${event} //= [] | .hooks.${event} += [${hook_json}]" "$SETTINGS_FILE")
+  # Fresh install — use template directly
+  echo "  Creating from template..."
+  /bin/cp "$TEMPLATE_FILE" "$SETTINGS_FILE"
+else
+  # Merge: template hooks/plugins/statusLine into existing settings
+  # Preserves user's existing keys (permissions, env overrides, etc.)
+  echo "  Merging template into existing settings..."
+  SETTINGS_TMP=$(jq -s '
+    .[0] as $existing | .[1] as $template |
+    $existing
+    | .hooks = $template.hooks
+    | .statusLine = $template.statusLine
+    | .env = (($existing.env // {}) * ($template.env // {}))
+    | .enabledPlugins = (($existing.enabledPlugins // {}) * ($template.enabledPlugins // {}))
+  ' "$SETTINGS_FILE" "$TEMPLATE_FILE")
   echo "$SETTINGS_TMP" > "$SETTINGS_FILE"
-  echo "  ✓ Registered: $hook_file → $event"
-}
-
-register_hook "PreToolUse" "bash ~/.claude/hooks/pre-tool-use.sh \$TOOL_NAME" "pre-tool-use.sh"
-register_hook "PostToolUse" "bash ~/.claude/hooks/quality-gate.sh \$TOOL_NAME" "quality-gate.sh"
-register_hook "UserPromptSubmit" "bash ~/.claude/hooks/user-prompt-submit.sh" "user-prompt-submit.sh"
-register_hook "SessionStart" "bash ~/.claude/hooks/session-start.sh" "session-start.sh"
-
-# 6. Configure statusline
-echo ""
-echo "📊 Configuring statusLine..."
-if [ -f "$CLAUDE_DIR/statusline-command.sh" ]; then
-  SETTINGS_TMP=$(jq '.statusLine = {"type": "command", "command": "bash ~/.claude/statusline-command.sh"}' "$SETTINGS_FILE")
-  echo "$SETTINGS_TMP" > "$SETTINGS_FILE"
-  echo "  ✓ Statusline enabled"
 fi
+echo "  ✓ Hooks, plugins, statusLine configured"
 
 echo ""
 echo "✅ Installation complete!"
 echo ""
-echo "Recommended: Also install official MCP plugins:"
+echo "Installed:"
+echo "  - 7 plugins (10 agents, 17 skills, 11 hooks, 7 rules)"
+echo "  - CLAUDE.md (global instructions)"
+echo "  - settings.json (hooks, statusLine, plugins)"
+echo ""
+echo "Updates: Just run 'git pull' — symlinks propagate changes instantly."
+echo ""
+echo "Optional official plugins:"
 echo "  claude plugin install stripe@claude-plugins-official"
 echo "  claude plugin install supabase@claude-plugins-official"
 echo "  claude plugin install sentry@claude-plugins-official"
 echo "  claude plugin install vercel@claude-plugins-official"
 echo ""
-echo "Restart Claude Code to activate plugins."
+echo "Restart Claude Code to activate."
